@@ -2,9 +2,9 @@
  * leBot-Puppeteer configuration
  */
 const config = {
-    netzwerkUrl: 'https://site.url',
-    netzwerkUsername: '<your-email>',
-    netzwerkPassword: '<your-password>',
+    Url: 'https://site.url',
+    username: '<your-email>',
+    password: '<your-password>',
     showBrowserAndKeepItOpen: false,
     consoleOutput: true
 };
