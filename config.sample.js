@@ -5,7 +5,7 @@ const config = {
     Url: 'https://site.url',
     username: '<your-email>',
     password: '<your-password>',
-    showBrowserAndKeepItOpen: false,
+    showBrowserAndKeepItOpen: true,
     consoleOutput: true
 };
 module.exports = config;
