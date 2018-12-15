@@ -47,11 +47,11 @@ const puppeteer = require('puppeteer');
 })();
 
 async function doLogin(page, config) {
-    await page.goto(config.Url);
-    await page.waitForSelector('input[name=u]');
-    await page.type('input[name=u]', config.username);
-    await page.type('input[name=p]', config.password);
-    await page.click('input[name=login]');
+    await page.goto(config.loginUrl);
+    await page.waitForSelector('input[name=username]');
+    await page.type('input[name=username]', config.username);
+    await page.type('input[name=password]', config.password);
+    await page.click('input[type=submit]');
     await page.waitForSelector('#responsive-tab');
     logInfo('Login done', config);
 }
