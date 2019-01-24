@@ -20,7 +20,7 @@ const keepLogin = true;
      */
     const browser = await puppeteer.launch({headless: !config.showBrowserAndKeepItOpen, ignoreHTTPSErrors: true});
     const page = await browser.newPage();
-    await page.setViewport({width: 1280, height: 800});
+    await page.setViewport({width: 1280, height: 900});
 
 
     /**
@@ -28,35 +28,27 @@ const keepLogin = true;
      */
     let run = 1;
 
-    if (keepLogin){
-        await doLogin(page, config);
-    }
-    while (run < 2) {
-        logInfo('Lauf #' + run++, config);
+    logInfo('Start:', config);
 
-        if (!keepLogin){
-            await doLogin(page, config);
-        }
+    await doLogin(page, config);
 
-        // Adresslistenmanagement
-        // let adresslistenPage = await browser.newPage();
-        // await openSubpage(adresslistenPage, '/adresslistenmanagement', config);
-        // await adresslistenPage.evaluate(() => {
-        //     jQuery('#edit-filter-geschaeftsberichtbox-22')[0].click();
-        //     jQuery('#edit-filter-funktionen-field-prokuristen')[0].click();
-        //     jQuery('#edit-filter-geschaeftsberichtbox-23')[0].click();
-        //     jQuery('#edit-submit')[0].click();
-        // });
-        // await adresslistenPage.close();
 
-        // Mysql-Datenbanken
-        await openSubpage(page, '/mysql-overview', config);
+    // Adresslistenmanagement
+    // let adresslistenPage = await browser.newPage();
+    // await openSubpage(adresslistenPage, '/adresslistenmanagement', config);
+    // await adresslistenPage.evaluate(() => {
+    //     jQuery('#edit-filter-geschaeftsberichtbox-22')[0].click();
+    //     jQuery('#edit-filter-funktionen-field-prokuristen')[0].click();
+    //     jQuery('#edit-filter-geschaeftsberichtbox-23')[0].click();
+    //     jQuery('#edit-submit')[0].click();
+    // });
+    // await adresslistenPage.close();
 
-        if (!keepLogin){
-            // Logout
-            await doLogout(page, config);
-        }
-    }
+    // Mysql-Datenbanken
+    await openSubpage(page, '/mysql-overview', config);
+
+    // PhpMyAdmin
+    await openSubpage(page, '/phpmyadmin/db745973610', config);
 
     if (keepLogin){
         // Logout
@@ -89,7 +81,7 @@ async function doLogin(page, config) {
     await page.type('input[name="oaologin.username"]', config.username);
     await page.type('input[name="oaologin.password"]', config.password);
     await page.click('button[type="submit"]');
-    await page.waitForSelector('main[class="page-content"]');
+    await page.waitForSelector('body');
     logInfo('Login done', config);
 }
 
@@ -102,7 +94,7 @@ async function doLogout(page, config) {
 
 async function openSubpage(page, url, config) {
     await page.goto(config.url + url);
-    await page.wa('#edit-search');
+    await page.waitForSelector('body');
     logInfo(url + ' geöffnet', config);
 }
 
