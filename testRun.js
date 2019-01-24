@@ -12,6 +12,8 @@ try {
 // load puppeteer
 const puppeteer = require('puppeteer');
 
+const keepLogin = true;
+
 (async () => {
     /**
      * Setup
@@ -25,18 +27,53 @@ const puppeteer = require('puppeteer');
      * Seiten durchgehen
      */
     let run = 1;
-    let releasesPage = [];
-    await doLogin(page, config);
 
-    while (false) {
-
+    if (keepLogin){
+        await doLogin(page, config);
+    }
+    while (run < 2) {
         logInfo('Lauf #' + run++, config);
 
+        if (!keepLogin){
+            await doLogin(page, config);
+        }
 
+        // Adresslistenmanagement
+        // let adresslistenPage = await browser.newPage();
+        // await openSubpage(adresslistenPage, '/adresslistenmanagement', config);
+        // await adresslistenPage.evaluate(() => {
+        //     jQuery('#edit-filter-geschaeftsberichtbox-22')[0].click();
+        //     jQuery('#edit-filter-funktionen-field-prokuristen')[0].click();
+        //     jQuery('#edit-filter-geschaeftsberichtbox-23')[0].click();
+        //     jQuery('#edit-submit')[0].click();
+        // });
+        // await adresslistenPage.close();
+
+        // Mysql-Datenbanken
+        await openSubpage(page, '/mysql-overview', config);
+
+        if (!keepLogin){
+            // Logout
+            await doLogout(page, config);
+        }
     }
 
-    // Logout
-    await doLogout(page, config);
+    if (keepLogin){
+        // Logout
+        await doLogout(page, config);
+    }
+
+    /*
+
+
+        // Beiteiligungen
+        await openBeteiligung(page, 'AWS', config);
+        await page.evaluate(() => {
+            jQuery('a.print-pdf')[0].click();
+        });
+        //await openBeteiligung(page, 'SWZ', config);
+    }
+    */
 
     /**
      * Close browser
@@ -47,22 +84,27 @@ const puppeteer = require('puppeteer');
 })();
 
 async function doLogin(page, config) {
-    await page.goto(config.loginUrl);
-    await page.waitForSelector('input[name=username]');
-    await page.type('input[name=username]', config.username);
-    await page.type('input[name=password]', config.password);
-    await page.click('input[type=submit]');
-    await page.waitForSelector('#responsive-tab');
+    await page.goto(config.url);
+    await page.waitForSelector('input[name="oaologin.username"]');
+    await page.type('input[name="oaologin.username"]', config.username);
+    await page.type('input[name="oaologin.password"]', config.password);
+    await page.click('button[type="submit"]');
+    await page.waitForSelector('main[class="page-content"]');
     logInfo('Login done', config);
 }
 
 async function doLogout(page, config) {
-    await page.goto(config.Url + '/user/logout');
-    await page.waitForSelector('input[name=username]');
-    await page.waitForSelector('input[name=username]');
+    await page.goto('/logout');
+    await page.waitForNavigation({ waitUntil: 'networkidle2' })
     logInfo('Logout done', config);
 }
 
+
+async function openSubpage(page, url, config) {
+    await page.goto(config.url + url);
+    await page.wa('#edit-search');
+    logInfo(url + ' geöffnet', config);
+}
 
 function logInfo(message, config) {
     if (config.consoleOutput) {
