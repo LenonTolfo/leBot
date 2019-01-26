@@ -2,8 +2,8 @@
  * leBot-Puppeteer configuration
  */
 const config = {
-    loginUrl: 'https://login.url',
-    gameUrl: 'https://game.url',
+    urlLogin: 'https://login.url',
+    url: 'https://game.url',
     username: '<your-email>',
     password: '<your-password>',
     showBrowserAndKeepItOpen: true,
