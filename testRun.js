@@ -103,11 +103,15 @@ async function doLogin(page, config) {
 }
 
 async function doRaid (page, config) {
-    logInfo('Stard Raid sequence', config);
+    logInfo('Start Raid sequence', config);
     
-    await page.goto(config.url + '/index.php?ac=raubzug');
-    await page.waitForSelector('input[title="Next"]');
-    await page.click('input[title="Next"]');
+    for (i = 0; i < 10; i++){
+        await page.goto(config.url + '/index.php?ac=raubzug');
+        await page.waitForSelector('input[title="Next"]');
+        await page.click('input[title="Next"]');
+        // wait for 10 min
+        await page.waitFor(590000);
+    }
     
 }
 
