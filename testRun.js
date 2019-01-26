@@ -20,7 +20,7 @@ const keepLogin = true;
      */
     const browser = await puppeteer.launch({headless: !config.showBrowserAndKeepItOpen, ignoreHTTPSErrors: true});
     const page = await browser.newPage();
-    await page.setViewport({width: 1280, height: 900});
+    await page.setViewport({width: 1600, height: 900});
 
 
     /**
@@ -32,7 +32,7 @@ const keepLogin = true;
 
     await doLogin(page, config);
 
-
+    await page.waitFor(1*1000);
     // Adresslistenmanagement
     // let adresslistenPage = await browser.newPage();
     // await openSubpage(adresslistenPage, '/adresslistenmanagement', config);
@@ -45,14 +45,14 @@ const keepLogin = true;
     // await adresslistenPage.close();
 
     // Mysql-Datenbanken
-    await openSubpage(page, '/mysql-overview', config);
+    //await openSubpage(page, '/mysql-overview', config);
 
     // PhpMyAdmin
-    await openSubpage(page, '/phpmyadmin/db745973610', config);
+    //await openSubpage(page, '/phpmyadmin/db745973610', config);
 
     if (keepLogin){
         // Logout
-        await doLogout(page, config);
+        //await doLogout(page, config);
     }
 
     /*
@@ -76,13 +76,25 @@ const keepLogin = true;
 })();
 
 async function doLogin(page, config) {
-    await page.goto(config.url);
-    await page.waitForSelector('input[name="oaologin.username"]');
-    await page.type('input[name="oaologin.username"]', config.username);
-    await page.type('input[name="oaologin.password"]', config.password);
-    await page.click('button[type="submit"]');
-    await page.waitForSelector('body');
+
+    // Enter host page
+    await page.goto(config.urlLogin + '');
+    await page.waitForSelector('a[href="#login"]');
+    await page.click('a[href="#login"]');
+    
+    // user name come with outofocus
+    await page.type('input[name="username"]', config.username);
+    await page.waitForSelector('input[name="password"]');
+    
+    // set the focus on the password input
+    await page.click('input[name="password"]');
+    await page.type('#id_password', config.password);
+    
+    await page.click('input[type="submit"]');
     logInfo('Login done', config);
+    
+    // goto Game page
+    await page.goto(config.url + '');
 }
 
 async function doLogout(page, config) {
