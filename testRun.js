@@ -19,8 +19,8 @@ const keepLogin = true;
      * Setup
      */
     const browser = await puppeteer.launch({headless: !config.showBrowserAndKeepItOpen, ignoreHTTPSErrors: true});
-    const page = await browser.newPage();
-    await page.setViewport({width: 1600, height: 900});
+    const loginPage = await browser.newPage();
+    await loginPage.setViewport({width: 1600, height: 900});
 
 
     /**
@@ -30,9 +30,18 @@ const keepLogin = true;
 
     logInfo('Start:', config);
 
-    await doLogin(page, config);
+    await doLogin(loginPage, config);
+    
+    // open new tab for the game
+    page = await browser.newPage();
+    await page.setViewport({width: 1200, height: 1200});
 
-    await page.waitFor(1*1000);
+    await page.goto(config.url + '/index.php?language=EN');
+    await page.waitForSelector('a[href="http://www.moonid.net/api/account/connect/192/"]');
+    await page.click('a[href="http://www.moonid.net/api/account/connect/192/"]');
+
+    await doRaid(page, config);
+
     // Adresslistenmanagement
     // let adresslistenPage = await browser.newPage();
     // await openSubpage(adresslistenPage, '/adresslistenmanagement', config);
@@ -89,12 +98,17 @@ async function doLogin(page, config) {
     // set the focus on the password input
     await page.click('input[name="password"]');
     await page.type('#id_password', config.password);
-    
     await page.click('input[type="submit"]');
     logInfo('Login done', config);
+}
+
+async function doRaid (page, config) {
+    logInfo('Stard Raid sequence', config);
     
-    // goto Game page
-    await page.goto(config.url + '');
+    await page.goto(config.url + '/index.php?ac=raubzug');
+    await page.waitForSelector('input[title="Next"]');
+    await page.click('input[title="Next"]');
+    
 }
 
 async function doLogout(page, config) {
