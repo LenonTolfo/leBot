@@ -107,8 +107,14 @@ async function doRaid (page, config) {
     
     for (i = 0; i < 10; i++){
         await page.goto(config.url + '/index.php?ac=raubzug');
-        await page.waitForSelector('input[title="Next"]');
-        await page.click('input[title="Next"]');
+        try {
+            await page.waitForSelector('input[title="Next"]');
+            await page.click('input[title="Next"]');
+        } catch  (err) {
+            await page.waitForSelector('input[src="img/EN/btn_repeat.jpg"]');
+            await page.click('input[src="img/EN/btn_repeat.jpg"]');
+            console.error("repeat");
+        }
         // wait for 10 min
         await page.waitFor(590000);
     }
