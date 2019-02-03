@@ -34,13 +34,14 @@ const keepLogin = true;
     
     // open new tab for the game
     page = await browser.newPage();
-    await page.setViewport({width: 1200, height: 1200});
-
+    await page.setViewport({width: 1600, height: 900});
     await page.goto(config.url + '/index.php?language=EN');
     await page.waitForSelector('a[href="http://www.moonid.net/api/account/connect/192/"]');
     await page.click('a[href="http://www.moonid.net/api/account/connect/192/"]');
 
-    await doRaid(page, config);
+    // await doRaid(page, config);
+
+    await train(page, config);
 
     // Adresslistenmanagement
     // let adresslistenPage = await browser.newPage();
@@ -65,8 +66,6 @@ const keepLogin = true;
     }
 
     /*
-
-
         // Beiteiligungen
         await openBeteiligung(page, 'AWS', config);
         await page.evaluate(() => {
@@ -83,6 +82,18 @@ const keepLogin = true;
         await browser.close();
     }
 })();
+
+async function train(page, config) {
+    await collectRewards(page, config);
+    logInfo('Start Training sequence', config);
+    let gold = 0;
+    
+    let element = await page.$("#goldbalance");
+    let text = await page.evaluate(element => element.textContent, element);
+    logInfo('Gold: ' + text, config);
+    
+
+}
 
 async function doLogin(page, config) {
 
@@ -102,10 +113,23 @@ async function doLogin(page, config) {
     logInfo('Login done', config);
 }
 
+async function collectRewards (page, config) {
+    // Collect Raid reward
+    await page.goto(config.url + '/index.php?ac=raubzug');
+    logInfo('Raid collected', config);
+    await page.waitFor(1000);
+    
+    // collect work reward
+    await page.goto(config.url + '/index.php?ac=friedhof');
+    logInfo('Wage collected', config);
+    await page.waitFor(1000);
+}
+
 async function doRaid (page, config) {
+    await collectRewards(page, config);
     logInfo('Start Raid sequence', config);
     
-    for (let i = 0; i < 6; i++){
+    for (let i = 1; i <= 6; i++){
         await page.goto(config.url + '/index.php?ac=raubzug');
         try {
             await page.waitForSelector('input[title="Next"]');
