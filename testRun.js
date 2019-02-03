@@ -39,9 +39,9 @@ const keepLogin = true;
     await page.waitForSelector('a[href="http://www.moonid.net/api/account/connect/192/"]');
     await page.click('a[href="http://www.moonid.net/api/account/connect/192/"]');
 
-    // await doRaid(page, config);
+    await doRaid(page, config);
 
-    await train(page, config);
+    await doTrain(page, config);
 
     // Adresslistenmanagement
     // let adresslistenPage = await browser.newPage();
@@ -83,20 +83,90 @@ const keepLogin = true;
     }
 })();
 
-async function train(page, config) {
+async function doTrain(page, config) {
     await collectRewards(page, config);
     logInfo('Start Training sequence', config);
-    let gold = 0;
-    
-    let element = await page.$("#goldbalance");
-    let text = await page.evaluate(element => element.textContent, element);
-    logInfo('Gold: ' + text, config);
-    
 
+    try {
+
+        await page.goto(config.url + '/index.php?ac=training');
+        let enough = true;
+        let gold = 0;
+        
+        while (enough) {
+            
+            await page.waitForSelector('#goldbalance');
+            let element = await page.$("#goldbalance");
+            gold = await page.evaluate(element => element.textContent, element);
+            gold = parseInt(gold.replace(",", ""));
+            logInfo('Gold: ' + gold, config);
+            
+            element = await page.$('a[href="index.php?ac=training&typ=staerke"]');
+            let text = await page.evaluate(element => element.textContent, element);
+            let strengthCost = text.split(' ');
+            strengthCost = parseInt(strengthCost[3].replace(",", ""));
+            
+            element = await page.$('a[href="index.php?ac=training&typ=ausdauer"]');
+            text = await page.evaluate(element => element.textContent, element);
+            let staminaCost = text.split(' ');
+            staminaCost = parseInt(staminaCost[3].replace(",", ""));
+            
+            element = await page.$('a[href="index.php?ac=training&typ=verteidigung"]');
+            text = await page.evaluate(element => element.textContent, element);
+            let defenceCost = text.split(' ');
+            defenceCost = parseInt(defenceCost[3].replace(",", ""));
+            
+            element = await page.$('a[href="index.php?ac=training&typ=gewandtheit"]');
+            text = await page.evaluate(element => element.textContent, element);
+            let agilityCost = text.split(' ');
+            agilityCost = parseInt(agilityCost[3].replace(",", ""));
+            
+            element = await page.$('a[href="index.php?ac=training&typ=charisma"]');
+            text = await page.evaluate(element => element.textContent, element);
+            let dexterityCost = text.split(' ');
+            dexterityCost = parseInt(dexterityCost[3].replace(",", ""));
+            
+            switch (true){
+                
+                case gold >= defenceCost:    
+                    await page.goto(config.url + '/index.php?ac=training&typ=verteidigung');
+                    logInfo('Train defence for ' + defenceCost, config);
+                    break;
+                
+                case gold >= agilityCost:
+                    await page.goto(config.url + '/index.php?ac=training&typ=gewandtheit');
+                    logInfo('Train agility for ' + agilityCost, config);
+                    break;
+                
+                case gold >= strengthCost:
+                    await page.goto(config.url + '/index.php?ac=training&typ=staerke');
+                    logInfo('Train strength for ' + strengthCost, config);
+                    break;
+                
+                case gold >= staminaCost:
+                    await page.goto(config.url + '/index.php?ac=training&typ=ausdauer');
+                    logInfo('Train stamina for ' + staminaCost, config);
+                    break;
+                
+                case gold >= dexterityCost:
+                    await page.goto(config.url + '/index.php?ac=training&typ=charisma');
+                    logInfo('Train dexteritz for ' + dexterityCost, config);
+                    break;
+                
+                default:
+                    logInfo('Not enough gold!', config);
+                    enough = false;
+            }
+        }    
+    } catch (err) {
+        logInfo(err, config);
+    }
+    
+    logInfo('Finished training', config);
 }
-
+    
 async function doLogin(page, config) {
-
+        
     // Enter host page
     await page.goto(config.urlLogin + '');
     await page.waitForSelector('a[href="#login"]');
