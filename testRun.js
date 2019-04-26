@@ -22,12 +22,6 @@ const keepLogin = true;
     const loginPage = await browser.newPage();
     await loginPage.setViewport({width: 1600, height: 900});
 
-
-    /**
-     * Seiten durchgehen
-     */
-    let run = 1;
-
     logInfo('Start:', config);
 
     await doLogin(loginPage, config);
@@ -42,6 +36,8 @@ const keepLogin = true;
     await doRaid(page, config);
 
     await doTrain(page, config);
+
+    //await doHideoutUpgrade(page, config);
 
     // Adresslistenmanagement
     // let adresslistenPage = await browser.newPage();
@@ -82,6 +78,66 @@ const keepLogin = true;
         await browser.close();
     }
 })();
+
+async function doHideoutUpgrade(page, config){
+    await collectRewards(page, config);
+    logInfo("Check hideout upgrades.",config);
+    let enough = true;
+    let gold = 0;
+
+    await page.goto(config.url + '/index.php?ac=unterschlupf');
+    
+    await page.waitForSelector('#goldbalance');
+    let element = await page.$("#goldbalance");
+    gold = await page.evaluate(element => element.textContent, element);
+    gold = parseInt(gold.replace(",", ""));
+    logInfo('Gold: ' + gold, config);
+    let building = true;
+    let wall = true;
+    let building = true;
+    let surroundings = true;
+
+    try {
+        element = await page.$('a[href="index.php?ac=unterschlupf&typ=unterschlupf&scrt=142198909#upgrade"]');
+        let text = await page.evaluate(element => element.textContent, element);
+        let buildingCost = text.split(' ');
+        buildingCost = parseInt(buildingCost[3].replace(",", ""));
+        logInfo(buildingCost, config);
+    } catch(err){
+        noBuilding = true;
+    }
+
+    try {
+        element = await page.$('a[href="index.php?ac=unterschlupf&typ=mauer&scrt=142198909#upgrade"]');
+        let text = await page.evaluate(element => element.textContent, element);
+        let wallCost = text.split(' ');
+        wallCost = parseInt(wallCost[3].replace(",", ""));
+        logInfo(wallCost, config);
+    } catch(err){
+        
+    }
+
+    try {
+        element = await page.$('a[]');
+        let text = await page.evaluate(element => element.textContent, element);
+        let wallCost = text.split(' ');
+        wallCost = parseInt(wallCost[3].replace(",", ""));
+        logInfo(wallCost, config);
+    } catch(err){
+
+    }
+
+    try {
+        element = await page.$('a[href="index.php?ac=unterschlupf&typ=umgebung&scrt=142198909#upgrade"]');
+        let text = await page.evaluate(element => element.textContent, element);
+        let surroundingsCost = text.split(' ');
+        wallCost = parseInt(wallCost[3].replace(",", ""));
+        logInfo(wallCost, config);
+    } catch(err){
+
+    }
+
+}
 
 async function doTrain(page, config) {
     await collectRewards(page, config);
@@ -161,7 +217,7 @@ async function doTrain(page, config) {
     } catch (err) {
         logInfo(err, config);
     }
-    
+
     logInfo('Finished training', config);
 }
     

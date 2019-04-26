@@ -32,7 +32,9 @@ const keepLogin = true;
     
     await doMultiResearch(page, config);
 
-    await colectArticlesRef(page, config);
+    let articles = await colectArticlesRef(page, config);
+
+    await openArticles(articles, browser, config);
 
     /**
      * Close browser
@@ -82,20 +84,31 @@ async function doMultiResearch(page, config){
     logInfo('Advanced search finished', config);
 }
 
-async function colectArticlesRef(){
+async function colectArticlesRef(page, config){
     await page.waitForSelector('#messagearea');
     logInfo('Start colectArticlesRef:', config);
 
-    let data = await page.evaluate(() => {
-        const divs = Array.from(document.querySelectorAll('.content'))
-        logInfo(divs, config);
-        return divs.map(td => {
-            td.textContent
-            logInfo(td, config);
-            return td.textContent;
-        })
+    let articles = await page.evaluate(() => {
+        const divs = Array.from(document.querySelectorAll('.title'))
+        return  divs.map(td => {
+            let title = td.textContent;
+            let link = td.firstChild.href;
+            return {title, link};
+        });
     });
-    logInfo('data:' + data, config);
+
+    logInfo('Colected ' + articles.length + ' articles.', config);
+    return articles;
+}
+
+async function openArticles(articles, browser, config){
+    logInfo('Start openArticles:', config);
+    let tabs = [];
+    for(let i=0; i < articles.length; i++){
+        tabs[i] = await browser.newPage();
+        await tabs[i].setViewport({width: 1600, height: 900});
+        await tabs[i].goto(articles[i].link);
+    }
 
 }
 
